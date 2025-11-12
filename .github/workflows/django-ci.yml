@@ -1,38 +1,49 @@
-name: Django CI/CD
+name: Django CI/CD Pipeline
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main" ]  # Run workflow on every push to the main branch
+  workflow_dispatch:       # Allow manual trigger from GitHub Actions UI
 
 jobs:
   build:
+    name: Continuous Integration - Build & Test
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+      # 1️⃣ Checkout the code from your GitHub repository
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
+      # 2️⃣ Set up Python environment (Python 3.12)
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
 
-    - name: Install Dependencies
-      run: |
-        pip install -r requirements.txt
+      # 3️⃣ Install dependencies from requirements.txt
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-    - name: Run Tests
-      run: |
-        python manage.py test
+      # 4️⃣ Run Django tests to verify the build
+      - name: Run Tests
+        run: |
+          python manage.py test
 
   deploy:
+    name: Continuous Deployment - PythonAnywhere
     needs: build
     runs-on: ubuntu-latest
+
     steps:
+      # 1️⃣ Trigger a reload of your PythonAnywhere app securely
       - name: Deploy to PythonAnywhere
         env:
           PA_API_TOKEN: ${{ secrets.PA_API_TOKEN }}
         run: |
-          echo "Deploying to PythonAnywhere..."
-          curl -X POST https://www.pythonanywhere.com/api/v0/user/<yourusername>/webapps/<yourapp>.pythonanywhere.com/reload/ \
-          -H "Authorization: Token $PA_API_TOKEN"
+          echo "🚀 Deploying to PythonAnywhere..."
+          curl -X POST https://www.pythonanywhere.com/api/v0/user/pallaviagnihotri03/webapps/pallaviagnihotri03.pythonanywhere.com/reload/ \
+          -H "Authorization: Token $aef88fafc956eb6ff028129ea3490537d04cb77d"
+          echo "✅ Deployment request sent to PythonAnywhere."
